@@ -34,8 +34,11 @@
     .prompt{color:var(--muted);font-weight:800;margin:7px 0 0}
     .small-btn{border:2px solid var(--ink);background:white;border-radius:16px;padding:10px 14px;font-weight:900;box-shadow:0 4px 0 var(--ink);cursor:pointer}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:14px}
-    .tile{aspect-ratio:1;border:3px solid var(--ink);border-radius:24px;background:white;display:grid;place-items:center;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:1000;box-shadow:0 6px 0 var(--ink);cursor:pointer;transition:transform .1s,box-shadow .1s}
-    .grid[dir="rtl"] .tile{font-family:"Geeza Pro","Noto Naskh Arabic","Arabic Typesetting",serif;font-weight:700;font-size:clamp(3rem,9vw,5rem);line-height:1.25}
+    .letter-info{margin-top:22px;min-height:74px;border:3px solid var(--ink);border-radius:20px;background:white;padding:14px 18px;text-align:center;font-size:1.05rem;font-weight:800;color:var(--muted)}
+    .letter-info strong{display:block;color:var(--ink);font-size:1.35rem;margin-bottom:4px}
+    .tile{aspect-ratio:1;min-width:0;overflow:hidden;contain:paint;border:3px solid var(--ink);border-radius:24px;background:white;display:grid;place-items:center;padding:.08em;font-size:clamp(2.5rem,8vw,4.5rem);font-weight:1000;line-height:1;box-shadow:0 6px 0 var(--ink);cursor:pointer;transition:transform .1s,box-shadow .1s}
+    .grid[dir="rtl"] .tile{font-family:"Geeza Pro","Noto Naskh Arabic","Arabic Typesetting",serif;font-weight:600;font-size:clamp(2.65rem,6vw,4rem);line-height:1}
+    .grid[dir="rtl"] .tile[data-glyph="هـ"]{font-size:clamp(2.1rem,5vw,3.35rem);padding-inline:.2em}
     .tile:active,.tile.chosen{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
     .tile:nth-child(5n+1){background:#fff1b9}.tile:nth-child(5n+2){background:#dff5f8}.tile:nth-child(5n+3){background:#fee0d8}.tile:nth-child(5n+4){background:#e3f3e7}.tile:nth-child(5n){background:#ece8fa}
     .focus-card{display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,1fr);gap:26px;align-items:stretch}
@@ -68,7 +71,7 @@
 
   <section id="letters" class="panel active"><div class="stage">
     <div class="topline"><div><h1 id="lettersTitle">Choose a letter</h1><p class="prompt" id="lettersPrompt">Tap any big letter.</p></div><button class="small-btn" id="letterCase">a / A</button></div>
-    <div class="grid" id="letterGrid"></div>
+    <div class="grid" id="letterGrid"></div><div class="letter-info" id="letterInfo" aria-live="polite">Tap a letter to see its exact pronunciation.</div>
   </div></section>
 
   <section id="numbers" class="panel"><div class="stage">
@@ -85,75 +88,8 @@
     <div class="stars" id="stars" aria-live="polite"></div><p class="note" id="quietNote">Spoken words and gentle feedback. No music or moving pictures.</p>
   </div></section>
 </main>
-<script>
-  let soundOn=true;
-  const soundButton=document.querySelector('#soundToggle');
-  soundButton.onclick=()=>{soundOn=!soundOn;window.speechSynthesis?.cancel();if(!soundOn&&activeAudio){activeAudio.pause();activeAudio.currentTime=0}soundButton.textContent=soundOn?'🔊 Sound':'🔇 Muted';soundButton.setAttribute('aria-pressed',String(soundOn));soundButton.setAttribute('aria-label',soundOn?'Turn sound off':'Turn sound on')};
-  let availableVoices=[];
-  function loadVoices(){if('speechSynthesis' in window)availableVoices=window.speechSynthesis.getVoices()}
-  loadVoices();
-  if('speechSynthesis' in window)window.speechSynthesis.addEventListener('voiceschanged',loadVoices);
-  let activeAudio;
-  function browserSpeech(text){if(!('speechSynthesis' in window))return;loadVoices();window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);const wantedLanguage=language==='ar'?'ar-SA':'en-GB';const matchingVoice=availableVoices.find(voice=>voice.lang.toLowerCase()===wantedLanguage.toLowerCase())||availableVoices.find(voice=>voice.lang.toLowerCase().startsWith(language==='ar'?'ar':'en'));utterance.lang=wantedLanguage;if(matchingVoice)utterance.voice=matchingVoice;utterance.rate=language==='ar'?.58:.72;utterance.pitch=1.05;utterance.volume=.9;window.speechSynthesis.resume();window.speechSynthesis.speak(utterance)}
-  function speak(text,audioFile){if(!soundOn)return;if(activeAudio){activeAudio.pause();activeAudio.currentTime=0}if(language==='ar'&&audioFile){activeAudio=new Audio(audioFile);activeAudio.volume=.9;activeAudio.play().catch(()=>browserSpeech(text));return}browserSpeech(text)}
-  function tone(kind='tap'){if(!soundOn)return;const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;const ctx=new Audio();const notes=kind==='good'?[523,659,784]:kind==='try'?[260]:[440];notes.forEach((freq,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,ctx.currentTime+i*.1);gain.gain.exponentialRampToValueAtTime(.08,ctx.currentTime+i*.1+.01);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+i*.1+.12);osc.connect(gain).connect(ctx.destination);osc.start(ctx.currentTime+i*.1);osc.stop(ctx.currentTime+i*.1+.13)});setTimeout(()=>ctx.close(),500)}
-  const latinLetters=[
-    {glyph:'A',speech:'A. Ah.'},{glyph:'B',speech:'B. Buh.'},
-    {glyph:'C',speech:'C. Kuh.'},{glyph:'D',speech:'D. Duh.'},
-    {glyph:'E',speech:'E. Eh.'},{glyph:'F',speech:'F. Fff.'},
-    {glyph:'G',speech:'G. Guh.'},{glyph:'H',speech:'H. Huh.'},
-    {glyph:'I',speech:'I. Ih.'},{glyph:'J',speech:'J. Juh.'},
-    {glyph:'K',speech:'K. Kuh.'},{glyph:'L',speech:'L. Lll.'},
-    {glyph:'M',speech:'M. Mmm.'},{glyph:'N',speech:'N. Nnn.'},
-    {glyph:'O',speech:'O. Aw.'},{glyph:'P',speech:'P. Puh.'},
-    {glyph:'Q',speech:'Q. Kwuh.'},{glyph:'R',speech:'R. Rrr.'},
-    {glyph:'S',speech:'S. Sss.'},{glyph:'T',speech:'T. Tuh.'},
-    {glyph:'U',speech:'U. Uh.'},{glyph:'V',speech:'V. Vvv.'},
-    {glyph:'W',speech:'W. Wuh.'},{glyph:'X',speech:'X. Kss.'},
-    {glyph:'Y',speech:'Y. Yuh.'},{glyph:'Z',speech:'Zed. Zzz.'}
-  ];
-  const arabicLetters=[
-    {glyph:'ء',name:'هَمْزَة',audio:'audio/ar/hamza.wav'},
-    {glyph:'ا',name:'أَلِف',audio:'audio/ar/alif.wav'},{glyph:'ب',name:'بَاء',audio:'audio/ar/baa.wav'},{glyph:'ت',name:'تَاء',audio:'audio/ar/taa.wav'},{glyph:'ث',name:'ثَاء',audio:'audio/ar/thaa.wav'},
-    {glyph:'ج',name:'جِيم',audio:'audio/ar/jeem.wav'},{glyph:'ح',name:'حَاء',audio:'audio/ar/haa.wav'},{glyph:'خ',name:'خَاء',audio:'audio/ar/khaa.wav'},{glyph:'د',name:'دَال',audio:'audio/ar/daal.wav'},
-    {glyph:'ذ',name:'ذَال',audio:'audio/ar/dhaal.wav'},{glyph:'ر',name:'رَاء',audio:'audio/ar/raa.wav'},{glyph:'ز',name:'زَاي',audio:'audio/ar/zaay.wav'},{glyph:'س',name:'سِين',audio:'audio/ar/seen.wav'},
-    {glyph:'ش',name:'شِين',audio:'audio/ar/sheen.wav'},{glyph:'ص',name:'صَاد',audio:'audio/ar/saad.wav'},{glyph:'ض',name:'ضَاد',audio:'audio/ar/daad.wav'},{glyph:'ط',name:'طَاء',audio:'audio/ar/taa_heavy.wav'},
-    {glyph:'ظ',name:'ظَاء',audio:'audio/ar/zaa_heavy.wav'},{glyph:'ع',name:'عَيْن',audio:'audio/ar/ayn.wav'},{glyph:'غ',name:'غَيْن',audio:'audio/ar/ghayn.wav'},{glyph:'ف',name:'فَاء',audio:'audio/ar/faa.wav'},
-    {glyph:'ق',name:'قَاف',audio:'audio/ar/qaaf.wav'},{glyph:'ك',name:'كَاف',audio:'audio/ar/kaaf.wav'},{glyph:'ل',name:'لَام',audio:'audio/ar/laam.wav'},{glyph:'م',name:'مِيم',audio:'audio/ar/meem.wav'},
-    {glyph:'ن',name:'نُون',audio:'audio/ar/noon.wav'},{glyph:'ه',name:'هَاء',audio:'audio/ar/haa_soft.wav'},{glyph:'و',name:'وَاو',audio:'audio/ar/waaw.wav'},{glyph:'ي',name:'يَاء',audio:'audio/ar/yaa.wav'}
-  ];
-  const englishWords=['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten'];
-  const arabicWords=['صِفْر','وَاحِد','اِثْنَان','ثَلَاثَة','أَرْبَعَة','خَمْسَة','سِتَّة','سَبْعَة','ثَمَانِيَة','تِسْعَة','عَشَرَة'];
-  const arabicNumberAudio=['zero','one','two','three','four','five','six','seven','eight','nine','ten'].map(name=>`audio/ar/${name}.wav`);
-  const arabicDigits=['٠','١','٢','٣','٤','٥','٦','٧','٨','٩','١٠'];
-  let language='en';
-  const grid=document.querySelector('#letterGrid');let lower=false;
-  function currentLetters(){return language==='ar'?arabicLetters:latinLetters}
-  function currentWords(){return language==='ar'?arabicWords:englishWords}
-  function digit(n){return language==='ar'?arabicDigits[n]:String(n)}
-  function drawLetters(){grid.dir=language==='ar'?'rtl':'ltr';grid.innerHTML=currentLetters().map(letter=>{const glyph=language==='ar'?letter.glyph:(lower?letter.glyph.toLowerCase():letter.glyph);const pronunciation=language==='ar'?letter.name:letter.speech;const audio=language==='ar'?letter.audio:'';return `<button class="tile" data-speech="${pronunciation}" data-audio="${audio}" aria-label="${language==='ar'?'حرف':'Letter'} ${pronunciation}">${glyph}</button>`}).join('');}
-  drawLetters();
-  document.querySelector('#letterCase').onclick=()=>{lower=!lower;drawLetters()};
-  grid.addEventListener('click',e=>{if(!e.target.matches('.tile'))return;document.querySelectorAll('.tile').forEach(x=>x.classList.remove('chosen'));e.target.classList.add('chosen');speak(e.target.dataset.speech,e.target.dataset.audio)});
-  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected','false'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.setAttribute('aria-selected','true');document.querySelector('#'+t.dataset.tab).classList.add('active')});
-  let num=1;
-  function drawNum(){const words=currentWords();document.querySelector('#numberSymbol').textContent=digit(num);document.querySelector('#numberWord').textContent=words[num];document.querySelector('#countLabel').textContent=language==='ar'?`${digit(num)} ${num===1?'شكل':'أشكال'}`:(num===1?'1 shape':`${num} shapes`);const s=document.querySelector('#shapes');s.innerHTML=num===0?`<span style="color:var(--muted)">${language==='ar'?'لا أشكال':'No shapes'}</span>`:Array.from({length:num},(_,i)=>`<i class="shape ${i%3===0?'circle':i%3===1?'':'diamond'}"></i>`).join('')}
-  function numberAudio(){return language==='ar'?arabicNumberAudio[num]:''}
-  document.querySelector('#prevNum').onclick=()=>{num=(num+10)%11;drawNum();speak(currentWords()[num],numberAudio())};document.querySelector('#nextNum').onclick=()=>{num=(num+1)%11;drawNum();speak(currentWords()[num],numberAudio())};document.querySelector('#numberSymbol').parentElement.onclick=()=>speak(currentWords()[num],numberAudio());drawNum();
-  let chosen=null,completed=0;
-  function dots(n){return `<div class="shape-row" aria-label="${n} shapes">${Array.from({length:n},()=>'<i class="shape circle"></i>').join('')}</div>`}
-  function shuffle(a){return a.sort(()=>Math.random()-.5)}
-  function newGame(){chosen=null;completed=0;document.querySelector('#stars').textContent='';const set=shuffle([1,2,3,4,5].slice()).slice(0,3).sort();document.querySelector('#matchNums').innerHTML=set.map(n=>`<button class="match" data-n="${n}">${digit(n)}</button>`).join('');document.querySelector('#matchShapes').innerHTML=shuffle(set.slice()).map(n=>`<button class="match" data-n="${n}" aria-label="${n} shapes">${dots(n)}</button>`).join('')}
-  document.querySelector('#newMatch').onclick=()=>{newGame();tone()};document.querySelector('#matchNums').onclick=e=>{const b=e.target.closest('.match');if(!b||b.classList.contains('done'))return;document.querySelectorAll('#matchNums .match').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');chosen=b;const value=Number(b.dataset.n);speak(currentWords()[value],language==='ar'?arabicNumberAudio[value]:'')};
-  document.querySelector('#matchShapes').onclick=e=>{const b=e.target.closest('.match');if(!b||!chosen||b.classList.contains('done'))return;if(b.dataset.n===chosen.dataset.n){b.classList.add('done');chosen.classList.add('done');chosen.classList.remove('selected');chosen=null;completed++;document.querySelector('#stars').textContent='★'.repeat(completed);tone('good');if(completed===3){document.querySelector('#stars').textContent=language==='ar'?'★ ★ ★  أَحْسَنْت!':'★ ★ ★  Well done!';setTimeout(()=>speak(language==='ar'?'أَحْسَنْت':'Well done!'),350)}}else{tone('try');b.animate([{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'none'}],{duration:180})}};newGame();
-  let installPrompt;const installButton=document.querySelector('#installButton');
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;installButton.hidden=false});
-  installButton.onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.hidden=true}else{alert('On iPhone or iPad: tap Share, then Add to Home Screen.')}};
-  if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!navigator.standalone)installButton.hidden=false;
-  window.addEventListener('appinstalled',()=>{installButton.hidden=true});
-  if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
-  function applyLanguage(){const ar=language==='ar';document.documentElement.lang=language;document.querySelector('#letterCase').hidden=ar;document.querySelector('#lettersTab').textContent=ar?'أ ب ج':'ABC';document.querySelector('#numbersTab').textContent=ar?'١٢٣':'123';document.querySelector('#matchTab').textContent=ar?'طابق':'Match';document.querySelector('#lettersTitle').textContent=ar?'اختر حرفًا':'Choose a letter';document.querySelector('#lettersPrompt').textContent=ar?'اضغط على أي حرف كبير.':'Tap any big letter.';document.querySelector('#numbersTitle').textContent=ar?'اختر رقمًا':'Choose a number';document.querySelector('#numbersPrompt').textContent=ar?'اضغط وانظر وعدّ الأشكال.':'Tap, look, and count the shapes.';document.querySelector('#matchTitle').textContent=ar?'طابق الأزواج':'Match the pairs';document.querySelector('#matchPrompt').textContent=ar?'اضغط رقمًا، ثم اضغط المجموعة المطابقة.':'Tap a number, then tap the same group.';document.querySelector('#newMatch').textContent=ar?'مجموعة جديدة':'New set';document.querySelector('#prevNum').textContent=ar?'السابق ←':'← Back';document.querySelector('#nextNum').textContent=ar?'→ التالي':'Next →';document.querySelector('#quietNote').textContent=ar?'نطق لطيف دون موسيقى أو صور متحركة.':'Spoken words and gentle feedback. No music or moving pictures.';document.querySelector('#languageToggle').setAttribute('aria-label',ar?'Switch to English':'Switch to Arabic');drawLetters();drawNum();newGame()}
-  document.querySelector('#languageToggle').onclick=()=>{language=language==='en'?'ar':'en';applyLanguage();speak(language==='ar'?'العربية':'English')};
-</script>
+<script src="alphabet-data.js"></script>
+<script src="audio-controller.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
