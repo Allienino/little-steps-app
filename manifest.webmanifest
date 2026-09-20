@@ -1,0 +1,12 @@
+{
+  "name": "Little Steps — Letters & Numbers",
+  "short_name": "Little Steps",
+  "description": "A calm learning app for letters and numbers.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff8e7",
+  "theme_color": "#f7c84b",
+  "icons": [
+    {"src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
