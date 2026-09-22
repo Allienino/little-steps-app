@@ -50,7 +50,6 @@ For Arabic, these native-speaker recordings are the priority missing files becau
 audio/ar/letters/haa_deep.mp3
 audio/ar/letters/khaa.mp3
 audio/ar/letters/ayn.mp3
-audio/ar/letters/ghayn.mp3
 audio/ar/letters/qaaf.mp3
 audio/ar/letters/saad.mp3
 audio/ar/letters/daad.mp3
@@ -59,3 +58,12 @@ audio/ar/letters/zaa_heavy.mp3
 ```
 
 The runtime falls back to an Arabic (`ar-SA`) system voice when an Arabic recording is absent. Every other exact Arabic name and example path is declared directly beside its letter in `alphabet-data.js`.
+
+## Supplied Arabic recordings
+
+These validated recordings are bundled and available offline:
+
+```text
+audio/ar/letters/ghayn.m4a
+audio/ar/letters/laam.m4a
+```

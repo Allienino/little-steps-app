@@ -35,6 +35,16 @@ test('Arabic alphabet is the exact 28-letter sequence with unique records', () =
   }
 });
 
+test('Arabic Laam and Ghayn use explicit final sukun for TTS', () => {
+  const byLetter = Object.fromEntries(arabicAlphabet.map(item => [item.letter, item]));
+  assert.equal(byLetter['ل'].name.spoken, 'لَامْ');
+  assert.equal(byLetter['غ'].name.spoken, 'غَيْنْ');
+  assert.equal(byLetter['ل'].name.label, 'Laam');
+  assert.equal(byLetter['غ'].name.label, 'Ghayn');
+  assert.equal(byLetter['ل'].name.audio, 'audio/ar/letters/laam.m4a');
+  assert.equal(byLetter['غ'].name.audio, 'audio/ar/letters/ghayn.m4a');
+});
+
 test('lowercase mode uses phoneme and example without the letter name', async () => {
   const source = await readFile(new URL('../app.js', import.meta.url), 'utf8');
   const lowercaseBranch = source.match(/if \(lower\) \{[\s\S]*?\n  \}/)?.[0] || '';

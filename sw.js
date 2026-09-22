@@ -1,5 +1,5 @@
-const CACHE='little-steps-v17';
-const FILES=['./','./index.html','./alphabet-data.js','./audio-controller.js','./app.js','./manifest.webmanifest','./icon.svg'];
+const CACHE='little-steps-v19';
+const FILES=['./','./index.html','./alphabet-data.js','./audio-controller.js','./app.js','./manifest.webmanifest','./icon.svg','./audio/ar/letters/ghayn.m4a','./audio/ar/letters/laam.m4a'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

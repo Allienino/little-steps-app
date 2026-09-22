@@ -30,15 +30,21 @@
     ['ش','شِين','Sheen','شَمْس','sheen','shams'], ['ص','صَاد','Saad','صَابُون','saad','saboon'],
     ['ض','ضَاد','Daad','ضَوْء','daad','daw'], ['ط','طَاء','Taa','طَاوِلَة','taa_heavy','tawila'],
     ['ظ','ظَاء','Zaa','ظَرْف','zaa_heavy','zarf'], ['ع','عَيْن','Ayn','عَيْن','ayn','ayn'],
-    ['غ','غَيْن','Ghayn','غُرْفَة','ghayn','ghurfa'], ['ف','فَاء','Faa','فِنْجَان','faa','finjan'],
+    ['غ','غَيْنْ','Ghayn','غُرْفَة','ghayn','ghurfa'], ['ف','فَاء','Faa','فِنْجَان','faa','finjan'],
     ['ق','قَاف','Qaaf','قَلَم','qaaf','qalam'], ['ك','كَاف','Kaaf','كُرْسِي','kaaf','kursi'],
-    ['ل','لَام','Laam','لَيْمُون','laam','laymoon'], ['م','مِيم','Meem','مِفْتَاح','meem','miftah'],
+    ['ل','لَامْ','Laam','لَيْمُون','laam','laymoon'], ['م','مِيم','Meem','مِفْتَاح','meem','miftah'],
     ['ن','نُون','Noon','نَجْم','noon','najm'], ['هـ','هَاء','Haa','هَدِيَّة','haa','hadiyya'],
     ['و','وَاو','Waw','وَرَقَة','waw','waraqa'], ['ي','يَاء','Yaa','يَد','yaa','yad']
   ];
   const arabicAlphabet = arabicRows.map(([letter, spokenName, label, example, file, exampleFile]) => ({
     letter,
-    name: { label, spoken: spokenName, audio: `audio/ar/letters/${file}.mp3` },
+    name: {
+      label,
+      spoken: spokenName,
+      audio: file === 'ghayn' || file === 'laam'
+        ? `audio/ar/letters/${file}.m4a`
+        : `audio/ar/letters/${file}.mp3`
+    },
     example: { word: example, audio: `audio/ar/examples/${exampleFile}.mp3` }
   }));
 
