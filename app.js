@@ -147,8 +147,8 @@ byId('matchShapes').addEventListener('click', event => {
     byId('stars').textContent = '★'.repeat(completed);
     audio.playTone('good');
     if (completed === 3) {
-      byId('stars').textContent = language === 'ar' ? '★ ★ ★  أَحْسَنْت!' : '★ ★ ★  Well done!';
-      setTimeout(() => audio.playSequence([{ fallbackText: language === 'ar' ? 'أَحْسَنْت' : 'Well done!' }], language === 'ar' ? 'ar-SA' : 'en-GB'), 550);
+      byId('stars').textContent = language === 'ar' ? '★ ★ ★  جَمِيل!' : '★ ★ ★  Well done!';
+      setTimeout(() => audio.playSequence([{ fallbackText: language === 'ar' ? 'جَمِيل' : 'Well done!' }], language === 'ar' ? 'ar-SA' : 'en-GB'), 550);
     }
   } else {
     audio.playTone('try');
@@ -176,7 +176,8 @@ function applyLanguage() {
   byId('newMatch').textContent = arabic ? 'مجموعة جديدة' : 'New set';
   byId('prevNum').textContent = arabic ? 'السابق ←' : '← Back';
   byId('nextNum').textContent = arabic ? '→ التالي' : 'Next →';
-  byId('quietNote').textContent = arabic ? 'نطق لطيف دون موسيقى أو صور متحركة.' : 'Spoken words and gentle feedback. No music or moving pictures.';
+  byId('quietNote').hidden = arabic;
+  byId('quietNote').textContent = 'Spoken words and gentle feedback. No music or moving pictures.';
   byId('languageToggle').setAttribute('aria-label', arabic ? 'Switch to English' : 'Switch to Arabic');
   drawLetters();
   drawNumber();
@@ -187,17 +188,27 @@ byId('languageToggle').addEventListener('click', () => { language = language ===
 
 let installPrompt;
 const installButton = byId('installButton');
-window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; installButton.hidden = false; });
+window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; });
 installButton.addEventListener('click', async () => {
   if (installPrompt) {
     installPrompt.prompt();
-    await installPrompt.userChoice;
+    const choice = await installPrompt.userChoice;
     installPrompt = null;
-    installButton.hidden = true;
-  } else alert('On iPhone or iPad: tap Share, then Add to Home Screen.');
+    if (choice.outcome === 'accepted') installButton.textContent = 'Installing…';
+  } else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+    alert('To install Little Steps: tap Share, then Add to Home Screen.');
+  } else {
+    alert('To install Little Steps, use the install icon in the address bar or open your browser menu and choose “Install Little Steps” or “Add to Home Screen”.');
+  }
 });
-if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone) installButton.hidden = false;
-window.addEventListener('appinstalled', () => { installButton.hidden = true; });
+if (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+  installButton.textContent = 'Installed ✓';
+  installButton.disabled = true;
+}
+window.addEventListener('appinstalled', () => {
+  installButton.textContent = 'Installed ✓';
+  installButton.disabled = true;
+});
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
 
 drawLetters();

@@ -52,3 +52,26 @@ test('lowercase mode uses phoneme and example without the letter name', async ()
   assert.match(lowercaseBranch, /item\.example\.audio/);
   assert.doesNotMatch(lowercaseBranch, /item\.name\.audio/);
 });
+
+test('install button is always present and not initially hidden', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const button = html.match(/<button class="install-button"[^>]*>/)?.[0] || '';
+  assert.match(button, /id="installButton"/);
+  assert.doesNotMatch(button, /\shidden(?:\s|>|=)/);
+});
+
+test('Arabic matching completion uses Jameel and hides the bottom note', async () => {
+  const source = await readFile(new URL('../app.js', import.meta.url), 'utf8');
+  assert.match(source, /★ ★ ★  جَمِيل!/);
+  assert.match(source, /fallbackText: language === 'ar' \? 'جَمِيل'/);
+  assert.match(source, /byId\('quietNote'\)\.hidden = arabic/);
+  assert.doesNotMatch(source, /نطق لطيف دون موسيقى أو صور متحركة/);
+});
+
+test('letter instructions do not describe letters as big', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../app.js', import.meta.url), 'utf8');
+  const visibleCopy = `${html.match(/<p class="prompt" id="lettersPrompt">([^<]*)<\/p>/)?.[1] || ''}\n${source}`;
+  assert.doesNotMatch(visibleCopy, /\bbig letter\b/i);
+  assert.doesNotMatch(visibleCopy, /حرف(?:ًا)?\s+كبير/);
+});
